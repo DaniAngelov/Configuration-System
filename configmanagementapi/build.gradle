@@ -1,0 +1,80 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.4.3'
+	id 'io.spring.dependency-management' version '1.1.7'
+	id 'org.unbroken-dome.test-sets' version '4.1.0'
+}
+
+apply plugin: 'groovy'
+apply plugin: 'io.spring.dependency-management'
+
+group = 'com.codingtask'
+version = '0.0.1-SNAPSHOT'
+
+
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(23)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+	integrationImplementation.extendsFrom testImplementation
+	integrationRuntime.extendsFrom testRuntime
+}
+
+repositories {
+	mavenCentral()
+}
+
+
+sourceSets {
+	integration {
+		groovy.srcDir "$projectDir/src/integration/groovy"
+		resources.srcDir "$projectDir/src/integration/resources"
+		compileClasspath += main.output + test.output
+		runtimeClasspath += main.output + test.output
+	}
+}
+
+
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa:3.4.3'
+	implementation("org.springframework.boot:spring-boot-starter-data-redis:3.4.3")
+	implementation 'org.postgresql:postgresql:42.7.5'
+	implementation 'org.modelmapper:modelmapper:3.2.2'
+	implementation 'jakarta.validation:jakarta.validation-api:3.1.1'
+	implementation 'org.springframework.kafka:spring-kafka:3.3.4'
+	implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.3'
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5")
+	implementation("org.codehaus.groovy:groovy:3.0.24")
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'io.projectreactor:reactor-test'
+	testImplementation "org.junit.jupiter:junit-jupiter-engine"
+	testImplementation("org.junit.jupiter:junit-jupiter-api:5.12.1")
+	testImplementation("org.springframework:spring-test:6.2.5")
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+	useJUnitPlatform()
+}
+
+task integrationTest(type: Test) {
+	testClassesDirs = sourceSets.integration.output.classesDirs
+	classpath = sourceSets.integration.runtimeClasspath
+}
+
+check.dependsOn integrationTest
+
+
